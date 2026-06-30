@@ -1,0 +1,30 @@
+name: Build YT-Pro
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build with Pake CLI
+        run: |
+          npm i -g pake-cli
+          pake https://www.youtube.com --name YT-Pro --inject src-tauri/loader.js --proxy-url http://127.0.0.1:20808
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YT-Pro-Windows
+          path: ./output/*.msi
