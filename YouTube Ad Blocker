@@ -1,0 +1,155 @@
+// ==UserScript==
+// @name         YouTube Ad Blocker
+// @namespace    http://tampermonkey.net/
+// @version      2.2
+// @description  Blocks YouTube ads without breaking settings menus
+// @author       MR-Braadworst
+// @match        https://www.youtube.com/*
+// @grant        none
+// @run-at       document-start
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    console.log('YouTube Ad Blocker v3.0 active');
+
+    // =========================
+    // Remove static page ads
+    // =========================
+    function removePageAds() {
+        const selectors = [
+            '#player-ads',
+            '#masthead-ad',
+            'ytd-promoted-video-renderer',
+            'ytd-display-ad-renderer',
+            'ytd-companion-slot-renderer',
+            'ytd-ad-slot-renderer',
+            'ytm-promoted-sparkles-web-renderer',
+            '.ytd-in-feed-ad-layout-renderer'
+        ];
+
+        document.querySelectorAll(selectors.join(','))
+            .forEach(el => el.remove());
+    }
+
+    // =========================
+    // Skip video ads
+    // =========================
+    function skipVideoAds() {
+        const adShowing = document.querySelector('.ad-showing');
+        const video = document.querySelector('video');
+
+        if (!adShowing || !video) return;
+
+        console.log('Ad detected -> skipping');
+
+        // Jump to end of ad
+        try {
+            if (video.duration && isFinite(video.duration)) {
+                video.currentTime = video.duration;
+            }
+        } catch (e) {}
+
+        // Click skip button if present
+        const skipBtn = document.querySelector(
+            '.ytp-ad-skip-button, .ytp-skip-ad-button, .ytp-ad-skip-button-modern'
+        );
+
+        if (skipBtn) {
+            skipBtn.click();
+        }
+
+        // Mute ads instantly
+        video.muted = true;
+    }
+
+    // =========================
+    // Remove overlay ads only
+    // =========================
+    function removeOverlays() {
+        const selectors = [
+            '.ytp-ad-overlay-container',
+            '.ytp-ad-player-overlay',
+            '.ytp-ad-image-overlay',
+            '.ytd-popup-container.style-scope ytd-enforcement-message-view-model'
+        ];
+
+        document.querySelectorAll(selectors.join(','))
+            .forEach(el => el.remove());
+    }
+
+    // =========================
+    // Remove ONLY anti-adblock popups
+    // =========================
+    function removePopups() {
+
+        // Controleer tekst VOORDAT je de popup verwijdert
+        document.querySelectorAll('tp-yt-paper-dialog').forEach(dialog => {
+
+            const text = dialog.innerText?.toLowerCase() || '';
+
+            if (
+                text.includes('ad blockers violate') ||
+                text.includes('disable your ad blocker') ||
+                text.includes('ads allow youtube') ||
+                text.includes('ad blocker') ||
+                text.includes('advertentie')
+            ) {
+                console.log('Anti-adblock popup verwijderd');
+                dialog.remove();
+            }
+            // Gewone menu's (instellingen, abonnementen, account) worden NIET aangeraakt
+        });
+
+        // Verwijder donkere achtergrond alleen bij anti-adblock popup
+        document.querySelectorAll('.tp-yt-paper-dialog-backdrop').forEach(backdrop => {
+            const antiPopup = document.querySelector('tp-yt-paper-dialog');
+
+            if (antiPopup) {
+                const text = antiPopup.innerText?.toLowerCase() || '';
+
+                if (
+                    text.includes('ad blockers violate') ||
+                    text.includes('disable your ad blocker') ||
+                    text.includes('ad blocker')
+                ) {
+                    backdrop.remove();
+                }
+            }
+        });
+    }
+
+    // =========================
+    // Hoofdloop
+    // =========================
+    function run() {
+        removePageAds();
+        removeOverlays();
+        removePopups();
+        skipVideoAds();
+    }
+
+    // MutationObserver - reageert op DOM-wijzigingen
+    const observer = new MutationObserver(run);
+
+    function startObserver() {
+        if (!document.body) {
+            requestAnimationFrame(startObserver);
+            return;
+        }
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        run();
+    }
+
+    startObserver();
+
+    // Backup interval elke seconde
+    setInterval(run, 1000);
+
+})();
