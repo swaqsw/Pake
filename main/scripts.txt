@@ -6,3 +6,4 @@ https://update.greasyfork.org/scripts/526798/YouTube Auto-Resume.user.js
 https://update.greasyfork.org/scripts/555903/YouTube直播聊天自动翻译.user.js
 https://update.greasyfork.org/scripts/487271/更好的 Youtube Shorts.user.js
 https://update.greasyfork.org/scripts/575941/YouTube Ads-Bypass.user.js
+https://github.com/swaqsw/Pake/raw/refs/heads/main/YouTube Ad Blocker
