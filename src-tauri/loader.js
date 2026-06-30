@@ -65,7 +65,7 @@
 (function () {
   // 替换为你的 scripts.txt 的 raw 地址（确保是 raw.githubusercontent.com）
   var scriptListUrl =
-    "https://raw.githubusercontent.com/你的用户名/你的仓库/main/scripts.txt";
+    "https://raw.githubusercontent.com/swaqsw/Pake/main/scripts.txt";
 
   function loadScript(url, callback) {
     var xhr = new XMLHttpRequest();
